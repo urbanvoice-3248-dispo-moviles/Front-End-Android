@@ -35,14 +35,14 @@ interface UrbanVoiceApi {
     suspend fun getReportById(@Path("id") id: Int): IncidentReportDto
 
     @GET("reports/user/{userId}")
-    suspend fun getReportsByUser(@Path("userId") userId: Int): List<IncidentReportDto>
+    suspend fun getReportsByUser(@Path("userId") userId: Int): List<IncidentReportDto>?
 
     @GET("reports/nearby")
     suspend fun getNearbyReports(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
         @Query("radiusInKm") radiusInKm: Double = 5.0
-    ): List<IncidentReportDto>
+    ): List<IncidentReportDto>?
 
     @PUT("reports/{id}")
     suspend fun updateReport(
@@ -55,7 +55,7 @@ interface UrbanVoiceApi {
 
     // Locations
     @GET("locations")
-    suspend fun getAllLocations(): List<LocationDto>
+    suspend fun getAllLocations(): List<LocationDto>?
 
     @GET("locations/{id}")
     suspend fun getLocationById(@Path("id") id: Int): LocationDto
@@ -65,25 +65,25 @@ interface UrbanVoiceApi {
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
         @Query("radiusInKm") radiusInKm: Double = 5.0
-    ): List<LocationDto>
+    ): List<LocationDto>?
 
     @GET("locations/district/{district}")
-    suspend fun getLocationsByDistrict(@Path("district") district: String): List<LocationDto>
+    suspend fun getLocationsByDistrict(@Path("district") district: String): List<LocationDto>?
 
     @GET("locations/dangerous")
     suspend fun getDangerousLocations(
         @Query("minRiskLevel") minRiskLevel: Int = 3
-    ): List<LocationDto>
+    ): List<LocationDto>?
 
     // Alerts
     @GET("alerts")
-    suspend fun getAllAlerts(): List<AlertDto>
+    suspend fun getAllAlerts(): List<AlertDto>?
 
     @GET("alerts/{id}")
     suspend fun getAlertById(@Path("id") id: Int): AlertDto
 
     @GET("alerts/user/{userId}")
-    suspend fun getAlertsByUser(@Path("userId") userId: Int): List<AlertDto>
+    suspend fun getAlertsByUser(@Path("userId") userId: Int): List<AlertDto>?
 
     @DELETE("alerts/{id}")
     suspend fun deleteAlert(@Path("id") id: Int)

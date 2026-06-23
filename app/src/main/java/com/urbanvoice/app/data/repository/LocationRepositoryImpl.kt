@@ -11,7 +11,7 @@ class LocationRepositoryImpl @Inject constructor(
 ) : LocationRepository {
 
     override suspend fun getAllLocations(): Result<List<Location>> {
-        return runCatching { api.getAllLocations().map { it.toDomain() } }
+        return runCatching { api.getAllLocations()?.map { it.toDomain() } ?: emptyList() }
     }
 
     override suspend fun getLocationById(id: Int): Result<Location> {
@@ -21,14 +21,14 @@ class LocationRepositoryImpl @Inject constructor(
     override suspend fun getNearbyLocations(
         latitude: Double, longitude: Double, radiusInKm: Double
     ): Result<List<Location>> {
-        return runCatching { api.getNearbyLocations(latitude, longitude, radiusInKm).map { it.toDomain() } }
+        return runCatching { api.getNearbyLocations(latitude, longitude, radiusInKm)?.map { it.toDomain() } ?: emptyList() }
     }
 
     override suspend fun getLocationsByDistrict(district: String): Result<List<Location>> {
-        return runCatching { api.getLocationsByDistrict(district).map { it.toDomain() } }
+        return runCatching { api.getLocationsByDistrict(district)?.map { it.toDomain() } ?: emptyList() }
     }
 
     override suspend fun getDangerousLocations(minRiskLevel: Int): Result<List<Location>> {
-        return runCatching { api.getDangerousLocations(minRiskLevel).map { it.toDomain() } }
+        return runCatching { api.getDangerousLocations(minRiskLevel)?.map { it.toDomain() } ?: emptyList() }
     }
 }

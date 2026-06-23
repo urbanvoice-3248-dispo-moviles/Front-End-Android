@@ -32,13 +32,13 @@ class ReportRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getReportsByUser(userId: Int): Result<List<IncidentReport>> {
-        return runCatching { api.getReportsByUser(userId).map { it.toDomain() } }
+        return runCatching { api.getReportsByUser(userId)?.map { it.toDomain() } ?: emptyList() }
     }
 
     override suspend fun getNearbyReports(
         latitude: Double, longitude: Double, radiusInKm: Double
     ): Result<List<IncidentReport>> {
-        return runCatching { api.getNearbyReports(latitude, longitude, radiusInKm).map { it.toDomain() } }
+        return runCatching { api.getNearbyReports(latitude, longitude, radiusInKm)?.map { it.toDomain() } ?: emptyList() }
     }
 
     override suspend fun updateReport(
