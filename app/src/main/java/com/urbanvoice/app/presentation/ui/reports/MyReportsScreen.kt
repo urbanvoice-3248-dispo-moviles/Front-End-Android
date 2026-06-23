@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,61 +70,66 @@ fun MyReportsScreen(
                 }
             }
             else -> {
-                PullToRefreshBox(
-                    isRefreshing = state.isLoading,
-                    onRefresh = { authState.profile?.let { viewModel.getReportsByUser(it.id) } },
-                    modifier = Modifier.fillMaxSize().padding(padding)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    LazyColumn(
-                        contentPadding = PaddingValues(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(state.reports) { report ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onNavigateToDetail(report.id) },
-                                shape = MaterialTheme.shapes.small
-                            ) {
-                                ListItem(
-                                    leadingContent = {
-                                        Icon(
-                                            imageVector = getIncidentIcon(report.incidentType),
-                                            contentDescription = null,
-                                            tint = Color.Red,
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    },
-                                    headlineContent = {
+                    item {
+                        TextButton(
+                            onClick = { authState.profile?.let { viewModel.getReportsByUser(it.id) } },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Actualizar")
+                        }
+                    }
+                    items(state.reports) { report ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onNavigateToDetail(report.id) },
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            ListItem(
+                                leadingContent = {
+                                    Icon(
+                                        imageVector = getIncidentIcon(report.incidentType),
+                                        contentDescription = null,
+                                        tint = Color.Red,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                },
+                                headlineContent = {
+                                    Text(
+                                        report.title,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                },
+                                supportingContent = {
+                                    Column {
                                         Text(
-                                            report.title,
-                                            fontWeight = FontWeight.SemiBold
+                                            report.description,
+                                            maxLines = 2,
+                                            style = MaterialTheme.typography.bodySmall
                                         )
-                                    },
-                                    supportingContent = {
-                                        Column {
-                                            Text(
-                                                report.description,
-                                                maxLines = 2,
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                            Text(
-                                                text = report.reportedAt.take(16).replace("T", " "),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = Color.Gray
-                                            )
-                                        }
-                                    },
-                                    trailingContent = {
-                                        if (report.isAnonymous) {
-                                            SuggestionChip(
-                                                onClick = {},
-                                                label = { Text("Anónimo", style = MaterialTheme.typography.labelSmall) }
-                                            )
-                                        }
+                                        Text(
+                                            text = report.reportedAt.take(16).replace("T", " "),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.Gray
+                                        )
                                     }
-                                )
-                            }
+                                },
+                                trailingContent = {
+                                    if (report.isAnonymous) {
+                                        SuggestionChip(
+                                            onClick = {},
+                                            label = { Text("Anónimo", style = MaterialTheme.typography.labelSmall) }
+                                        )
+                                    }
+                                }
+                            )
                         }
                     }
                 }

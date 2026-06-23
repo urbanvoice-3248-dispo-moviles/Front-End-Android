@@ -17,8 +17,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.urbanvoice.app.domain.model.IncidentReport
-import com.urbanvoice.app.domain.model.Location
-import com.urbanvoice.app.presentation.theme.PrimaryColor
 import com.urbanvoice.app.presentation.ui.components.AppDrawer
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 import com.urbanvoice.app.presentation.viewmodel.LocationViewModel
@@ -43,33 +41,10 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val defaultLatLng = LatLng(-12.0464, -77.0428)
-    val markers = remember { mutableStateListOf<com.google.android.gms.maps.model.MarkerOptions>() }
 
     LaunchedEffect(Unit) {
         locationViewModel.getAllLocations()
         reportViewModel.getNearbyReports(-12.0464, -77.0428)
-    }
-
-    LaunchedEffect(locationState.locations, reportState.reports) {
-        markers.clear()
-        locationState.locations.forEach { loc ->
-            markers.add(
-                com.google.android.gms.maps.model.MarkerOptions()
-                    .position(LatLng(loc.latitude, loc.longitude))
-                    .title(loc.district)
-                    .snippet("Riesgo: ${loc.riskCategory} - Incidentes: ${loc.incidentCount}")
-                    .icon(BitmapDescriptorFactory.defaultMarker(getRiskHue(loc.riskLevel)))
-            )
-        }
-        reportState.reports.forEach { report ->
-            markers.add(
-                com.google.android.gms.maps.model.MarkerOptions()
-                    .position(LatLng(report.latitude, report.longitude))
-                    .title(report.title)
-                    .snippet(report.description)
-                    .icon(BitmapDescriptorFactory.defaultMarker(getReportHue(report.incidentType)))
-            )
-        }
     }
 
     ModalNavigationDrawer(
@@ -144,9 +119,39 @@ fun HomeScreen(
                     uiSettings = MapUiSettings(
                         myLocationButtonEnabled = true,
                         zoomControlsEnabled = true
-                    ),
-                    onMapClick = { /* handle marker tap in future */ }
-                )
+                    )
+                ) {
+                    locationState.locations.forEach { loc ->
+                        MarkerInfoWindow(
+                            state = rememberMarkerState(
+                                key = "loc_${loc.id}",
+                                position = LatLng(loc.latitude, loc.longitude)
+                            ),
+                            icon = BitmapDescriptorFactory.defaultMarker(
+                                getRiskHue(loc.riskLevel)
+                            ),
+                            title = loc.district,
+                            snippet = "Riesgo: ${loc.riskCategory} - Incidentes: ${loc.incidentCount}"
+                        )
+                    }
+                    reportState.reports.forEach { report ->
+                        MarkerInfoWindow(
+                            state = rememberMarkerState(
+                                key = "rpt_${report.id}",
+                                position = LatLng(report.latitude, report.longitude)
+                            ),
+                            icon = BitmapDescriptorFactory.defaultMarker(
+                                getReportHue(report.incidentType)
+                            ),
+                            title = report.title,
+                            snippet = report.description,
+                            onClick = {
+                                onNavigateToDetail(report.id)
+                                true
+                            }
+                        )
+                    }
+                }
 
                 if (locationState.isLoading || reportState.isLoading) {
                     CircularProgressIndicator(
@@ -158,22 +163,18 @@ fun HomeScreen(
     }
 }
 
-private fun getRiskHue(riskLevel: Int): Float {
-    return when (riskLevel) {
-        4, 5 -> BitmapDescriptorFactory.HUE_RED
-        3 -> BitmapDescriptorFactory.HUE_ORANGE
-        2 -> BitmapDescriptorFactory.HUE_YELLOW
-        else -> BitmapDescriptorFactory.HUE_GREEN
-    }
+private fun getRiskHue(riskLevel: Int): Float = when (riskLevel) {
+    4, 5 -> BitmapDescriptorFactory.HUE_RED
+    3 -> BitmapDescriptorFactory.HUE_ORANGE
+    2 -> BitmapDescriptorFactory.HUE_YELLOW
+    else -> BitmapDescriptorFactory.HUE_GREEN
 }
 
-private fun getReportHue(type: String): Float {
-    return when (type) {
-        "ROBBERY" -> BitmapDescriptorFactory.HUE_VIOLET
-        "ASSAULT" -> BitmapDescriptorFactory.HUE_RED
-        "HARASSMENT" -> BitmapDescriptorFactory.HUE_ORANGE
-        "VANDALISM" -> BitmapDescriptorFactory.HUE_CYAN
-        "ACCIDENT" -> BitmapDescriptorFactory.HUE_BLUE
-        else -> BitmapDescriptorFactory.HUE_ROSE
-    }
+private fun getReportHue(type: String): Float = when (type) {
+    "ROBBERY" -> BitmapDescriptorFactory.HUE_VIOLET
+    "ASSAULT" -> BitmapDescriptorFactory.HUE_RED
+    "HARASSMENT" -> BitmapDescriptorFactory.HUE_ORANGE
+    "VANDALISM" -> BitmapDescriptorFactory.HUE_CYAN
+    "ACCIDENT" -> BitmapDescriptorFactory.HUE_BLUE
+    else -> BitmapDescriptorFactory.HUE_ROSE
 }

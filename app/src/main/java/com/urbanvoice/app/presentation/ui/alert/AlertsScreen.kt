@@ -7,7 +7,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,69 +95,74 @@ fun AlertsScreen(
                 }
             }
             else -> {
-                PullToRefreshBox(
-                    isRefreshing = state.isLoading,
-                    onRefresh = {
-                        val profile = authState.profile
-                        if (profile != null) viewModel.getAlertsByUser(profile.id)
-                        else viewModel.getAllAlerts()
-                    },
-                    modifier = Modifier.fillMaxSize().padding(padding)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    LazyColumn(
-                        contentPadding = PaddingValues(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(state.alerts) { alert ->
-                            Card(
-                                shape = MaterialTheme.shapes.small
-                            ) {
-                                ListItem(
-                                    leadingContent = {
-                                        Icon(
-                                            imageVector = getAlertIcon(alert.type),
-                                            contentDescription = null,
-                                            tint = if (alert.isRead) Color.Gray else Color.Red,
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    },
-                                    headlineContent = {
+                    item {
+                        TextButton(
+                            onClick = {
+                                val profile = authState.profile
+                                if (profile != null) viewModel.getAlertsByUser(profile.id)
+                                else viewModel.getAllAlerts()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Actualizar")
+                        }
+                    }
+                    items(state.alerts) { alert ->
+                        Card(
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            ListItem(
+                                leadingContent = {
+                                    Icon(
+                                        imageVector = getAlertIcon(alert.type),
+                                        contentDescription = null,
+                                        tint = if (alert.isRead) Color.Gray else Color.Red,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                },
+                                headlineContent = {
+                                    Text(
+                                        text = alert.title,
+                                        fontWeight = if (alert.isRead) FontWeight.Normal else FontWeight.Bold
+                                    )
+                                },
+                                supportingContent = {
+                                    Column {
                                         Text(
-                                            text = alert.title,
-                                            fontWeight = if (alert.isRead) FontWeight.Normal else FontWeight.Bold
+                                            text = alert.message,
+                                            maxLines = 2,
+                                            style = MaterialTheme.typography.bodySmall
                                         )
-                                    },
-                                    supportingContent = {
-                                        Column {
-                                            Text(
-                                                text = alert.message,
-                                                maxLines = 2,
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                            Text(
-                                                text = alert.createdAt.take(16).replace("T", " "),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = Color.Gray
-                                            )
-                                        }
-                                    },
-                                    trailingContent = {
-                                        if (!alert.isRead) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(12.dp)
-                                                    .padding(end = 8.dp)
-                                            ) {
-                                                Surface(
-                                                    modifier = Modifier.size(12.dp),
-                                                    shape = CircleShape,
-                                                    color = Color.Red
-                                                ) {}
-                                            }
+                                        Text(
+                                            text = alert.createdAt.take(16).replace("T", " "),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                },
+                                trailingContent = {
+                                    if (!alert.isRead) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .padding(end = 8.dp)
+                                        ) {
+                                            Surface(
+                                                modifier = Modifier.size(12.dp),
+                                                shape = CircleShape,
+                                                color = Color.Red
+                                            ) {}
                                         }
                                     }
-                                )
-                            }
+                                }
+                            )
                         }
                     }
                 }
