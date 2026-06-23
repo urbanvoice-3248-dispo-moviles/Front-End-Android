@@ -39,7 +39,7 @@ class AuthViewModel @Inject constructor(
                 }
                 .onFailure {
                     _state.value = _state.value.copy(
-                        isLoading = false, error = "Credenciales inválidas"
+                        isLoading = false, error = it.message ?: "Credenciales inválidas"
                     )
                 }
         }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +23,7 @@ import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyReportsScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToDetail: (Int) -> Unit,
     viewModel: ReportViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
@@ -34,7 +36,16 @@ fun MyReportsScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Mis Reportes") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Mis Reportes") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                }
+            )
+        }
     ) { padding ->
         when {
             state.isLoading -> {

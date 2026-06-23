@@ -2,10 +2,12 @@ package com.urbanvoice.app.presentation.ui.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +41,7 @@ fun HomeScreen(
     val reportState by reportViewModel.state.collectAsStateWithLifecycle()
     val authState by authViewModel.state.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     val defaultLatLng = LatLng(-12.0464, -77.0428)
 
@@ -52,25 +55,25 @@ fun HomeScreen(
         drawerContent = {
             AppDrawer(
                 profile = authState.profile,
-                onMapaDeRiesgo = { drawerState.close() },
+                onMapaDeRiesgo = { scope.launch { drawerState.close() } },
                 onReportarIncidente = {
-                    drawerState.close()
+                    scope.launch { drawerState.close() }
                     onNavigateToReport()
                 },
                 onMisReportes = {
-                    drawerState.close()
+                    scope.launch { drawerState.close() }
                     onNavigateToMyReports()
                 },
                 onAlertas = {
-                    drawerState.close()
+                    scope.launch { drawerState.close() }
                     onNavigateToAlerts()
                 },
                 onMiPerfil = {
-                    drawerState.close()
+                    scope.launch { drawerState.close() }
                     onNavigateToProfile()
                 },
                 onCerrarSesion = {
-                    drawerState.close()
+                    scope.launch { drawerState.close() }
                     authViewModel.logout()
                     onLogout()
                 }
@@ -82,8 +85,8 @@ fun HomeScreen(
                 TopAppBar(
                     title = { Text("UrbanVoice") },
                     navigationIcon = {
-                        IconButton(onClick = { drawerState.open() }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Filled.Menu, contentDescription = "Menú")
                         }
                     }
                 )

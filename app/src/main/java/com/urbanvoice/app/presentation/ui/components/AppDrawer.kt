@@ -83,7 +83,7 @@ private fun DrawerItem(
     onClick: () -> Unit,
     tint: Color = MaterialTheme.colorScheme.onSurface
 ) {
-    NavDrawerItem(
+    NavigationDrawerItem(
         icon = { Icon(icon, contentDescription = label, tint = tint) },
         label = { Text(label, color = tint) },
         selected = false,

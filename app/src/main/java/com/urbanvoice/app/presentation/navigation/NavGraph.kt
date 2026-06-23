@@ -40,11 +40,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             })
         }
         composable(Routes.REGISTER) {
-            RegisterScreen(onNavigateToHome = {
-                navController.navigate(Routes.HOME) {
-                    popUpTo(Routes.LOGIN) { inclusive = true }
+            RegisterScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
                 }
-            })
+            )
         }
         composable(Routes.HOME) {
             HomeScreen(
@@ -63,14 +66,18 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             )
         }
         composable(Routes.REPORT_INCIDENT) {
-            ReportIncidentScreen(onNavigateToHome = {
-                navController.popBackStack()
-            })
+            ReportIncidentScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = { navController.popBackStack() }
+            )
         }
         composable(Routes.MY_REPORTS) {
-            MyReportsScreen(onNavigateToDetail = { reportId ->
-                navController.navigate("incident_detail/$reportId")
-            })
+            MyReportsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToDetail = { reportId ->
+                    navController.navigate("incident_detail/$reportId")
+                }
+            )
         }
         composable(
             route = Routes.INCIDENT_DETAIL,
@@ -83,11 +90,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             AlertsScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Routes.PROFILE) {
-            ProfileScreen(onLogout = {
-                navController.navigate(Routes.LOGIN) {
-                    popUpTo(0) { inclusive = true }
+            ProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onLogout = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
-            })
+            )
         }
     }
 }
