@@ -15,7 +15,6 @@ import com.urbanvoice.app.presentation.ui.profile.ProfileScreen
 import com.urbanvoice.app.presentation.ui.report.ReportIncidentScreen
 import com.urbanvoice.app.presentation.ui.reports.IncidentDetailScreen
 import com.urbanvoice.app.presentation.ui.reports.MyReportsScreen
-import com.urbanvoice.app.domain.model.IncidentReport
 
 object Routes {
     const val LOGIN = "login"

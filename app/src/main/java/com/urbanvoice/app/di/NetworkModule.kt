@@ -1,6 +1,5 @@
 package com.urbanvoice.app.di
 
-import com.urbanvoice.app.BuildConfig
 import com.urbanvoice.app.data.remote.api.UrbanVoiceApi
 import dagger.Module
 import dagger.Provides

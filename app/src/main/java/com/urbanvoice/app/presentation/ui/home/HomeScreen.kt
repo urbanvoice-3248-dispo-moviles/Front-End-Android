@@ -124,7 +124,6 @@ fun HomeScreen(
                     locationState.locations.forEach { loc ->
                         MarkerInfoWindow(
                             state = rememberMarkerState(
-                                key = "loc_${loc.id}",
                                 position = LatLng(loc.latitude, loc.longitude)
                             ),
                             icon = BitmapDescriptorFactory.defaultMarker(
@@ -137,7 +136,6 @@ fun HomeScreen(
                     reportState.reports.forEach { report ->
                         MarkerInfoWindow(
                             state = rememberMarkerState(
-                                key = "rpt_${report.id}",
                                 position = LatLng(report.latitude, report.longitude)
                             ),
                             icon = BitmapDescriptorFactory.defaultMarker(
