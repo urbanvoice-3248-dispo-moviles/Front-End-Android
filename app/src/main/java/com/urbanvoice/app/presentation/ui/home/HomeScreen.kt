@@ -1,0 +1,179 @@
+package com.urbanvoice.app.presentation.ui.home
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
+import com.urbanvoice.app.domain.model.IncidentReport
+import com.urbanvoice.app.domain.model.Location
+import com.urbanvoice.app.presentation.theme.PrimaryColor
+import com.urbanvoice.app.presentation.ui.components.AppDrawer
+import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
+import com.urbanvoice.app.presentation.viewmodel.LocationViewModel
+import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(
+    onNavigateToReport: () -> Unit,
+    onNavigateToAlerts: () -> Unit,
+    onNavigateToMyReports: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    onNavigateToDetail: (Int) -> Unit,
+    onLogout: () -> Unit,
+    locationViewModel: LocationViewModel = hiltViewModel(),
+    reportViewModel: ReportViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
+) {
+    val locationState by locationViewModel.state.collectAsStateWithLifecycle()
+    val reportState by reportViewModel.state.collectAsStateWithLifecycle()
+    val authState by authViewModel.state.collectAsStateWithLifecycle()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
+    val defaultLatLng = LatLng(-12.0464, -77.0428)
+    val markers = remember { mutableStateListOf<com.google.android.gms.maps.model.MarkerOptions>() }
+
+    LaunchedEffect(Unit) {
+        locationViewModel.getAllLocations()
+        reportViewModel.getNearbyReports(-12.0464, -77.0428)
+    }
+
+    LaunchedEffect(locationState.locations, reportState.reports) {
+        markers.clear()
+        locationState.locations.forEach { loc ->
+            markers.add(
+                com.google.android.gms.maps.model.MarkerOptions()
+                    .position(LatLng(loc.latitude, loc.longitude))
+                    .title(loc.district)
+                    .snippet("Riesgo: ${loc.riskCategory} - Incidentes: ${loc.incidentCount}")
+                    .icon(BitmapDescriptorFactory.defaultMarker(getRiskHue(loc.riskLevel)))
+            )
+        }
+        reportState.reports.forEach { report ->
+            markers.add(
+                com.google.android.gms.maps.model.MarkerOptions()
+                    .position(LatLng(report.latitude, report.longitude))
+                    .title(report.title)
+                    .snippet(report.description)
+                    .icon(BitmapDescriptorFactory.defaultMarker(getReportHue(report.incidentType)))
+            )
+        }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            AppDrawer(
+                profile = authState.profile,
+                onMapaDeRiesgo = { drawerState.close() },
+                onReportarIncidente = {
+                    drawerState.close()
+                    onNavigateToReport()
+                },
+                onMisReportes = {
+                    drawerState.close()
+                    onNavigateToMyReports()
+                },
+                onAlertas = {
+                    drawerState.close()
+                    onNavigateToAlerts()
+                },
+                onMiPerfil = {
+                    drawerState.close()
+                    onNavigateToProfile()
+                },
+                onCerrarSesion = {
+                    drawerState.close()
+                    authViewModel.logout()
+                    onLogout()
+                }
+            )
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("UrbanVoice") },
+                    navigationIcon = {
+                        IconButton(onClick = { drawerState.open() }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                    }
+                )
+            },
+            floatingActionButton = {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FloatingActionButton(
+                        onClick = onNavigateToReport,
+                        containerColor = Color.Red,
+                        contentColor = Color.White
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Reportar")
+                    }
+                    SmallFloatingActionButton(
+                        onClick = onNavigateToAlerts,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Alertas")
+                    }
+                }
+            }
+        ) { padding ->
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(defaultLatLng, 12f)
+                    },
+                    uiSettings = MapUiSettings(
+                        myLocationButtonEnabled = true,
+                        zoomControlsEnabled = true
+                    ),
+                    onMapClick = { /* handle marker tap in future */ }
+                )
+
+                if (locationState.isLoading || reportState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun getRiskHue(riskLevel: Int): Float {
+    return when (riskLevel) {
+        4, 5 -> BitmapDescriptorFactory.HUE_RED
+        3 -> BitmapDescriptorFactory.HUE_ORANGE
+        2 -> BitmapDescriptorFactory.HUE_YELLOW
+        else -> BitmapDescriptorFactory.HUE_GREEN
+    }
+}
+
+private fun getReportHue(type: String): Float {
+    return when (type) {
+        "ROBBERY" -> BitmapDescriptorFactory.HUE_VIOLET
+        "ASSAULT" -> BitmapDescriptorFactory.HUE_RED
+        "HARASSMENT" -> BitmapDescriptorFactory.HUE_ORANGE
+        "VANDALISM" -> BitmapDescriptorFactory.HUE_CYAN
+        "ACCIDENT" -> BitmapDescriptorFactory.HUE_BLUE
+        else -> BitmapDescriptorFactory.HUE_ROSE
+    }
+}
