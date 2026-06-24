@@ -80,6 +80,21 @@ class ReportViewModel @Inject constructor(
         }
     }
 
+    fun getAllReports() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            reportRepository.getAllReports()
+                .onSuccess { reports ->
+                    _state.value = _state.value.copy(isLoading = false, reports = reports)
+                }
+                .onFailure {
+                    _state.value = _state.value.copy(
+                        isLoading = false, error = it.message ?: "Error al obtener reportes"
+                    )
+                }
+        }
+    }
+
     fun getReportById(id: Int) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)

@@ -6,8 +6,7 @@ import com.urbanvoice.app.domain.model.Alert
 data class AlertDto(
     val id: Int,
     @SerializedName("user_id") val userId: Int,
-    val type: String?,
-    @SerializedName("alert_type") val alertType: String?,
+    @SerializedName("type") val type: String,
     val title: String,
     val message: String,
     val latitude: Double?,
@@ -18,7 +17,7 @@ data class AlertDto(
 
 fun AlertDto.toDomain() = Alert(
     id = id, userId = userId,
-    type = type ?: alertType ?: "",
+    type = type,
     title = title, message = message,
     latitude = latitude, longitude = longitude,
     isRead = isRead, createdAt = createdAt

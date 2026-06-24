@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
@@ -26,14 +27,15 @@ import com.urbanvoice.app.presentation.theme.DangerColor
 import com.urbanvoice.app.presentation.ui.components.LoadingOverlay
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportIncidentScreen(
+    authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
-    viewModel: ReportViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel()
+    viewModel: ReportViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val authState by authViewModel.state.collectAsStateWithLifecycle()
@@ -47,6 +49,7 @@ fun ReportIncidentScreen(
     var longitude by remember { mutableStateOf<Double?>(null) }
     var mediaPath by remember { mutableStateOf<String?>(null) }
     var expanded by remember { mutableStateOf(false) }
+    var mediaError by remember { mutableStateOf<String?>(null) }
 
     val incidentTypes = listOf(
         "ROBBERY" to "Robo", "ASSAULT" to "Asalto", "HARASSMENT" to "Acoso",
@@ -70,7 +73,37 @@ fun ReportIncidentScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        mediaPath = uri?.toString()
+        uri?.let {
+            val inputStream = context.contentResolver.openInputStream(it)
+            val size = inputStream?.available() ?: 0
+            inputStream?.close()
+            if (size > 10 * 1024 * 1024) {
+                mediaError = "La imagen excede el tamaño máximo de 10 MB"
+                mediaPath = null
+            } else {
+                mediaError = null
+                mediaPath = it.toString()
+            }
+        }
+    }
+
+    var cameraImageUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && cameraImageUri != null) {
+            val inputStream = context.contentResolver.openInputStream(cameraImageUri!!)
+            val size = inputStream?.available() ?: 0
+            inputStream?.close()
+            if (size > 10 * 1024 * 1024) {
+                mediaError = "La imagen excede el tamaño máximo de 10 MB"
+                mediaPath = null
+            } else {
+                mediaError = null
+                mediaPath = cameraImageUri.toString()
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -179,29 +212,53 @@ fun ReportIncidentScreen(
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { imagePickerLauncher.launch("image/*") }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.CameraAlt, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Agregar evidencia")
+                        OutlinedButton(
+                            onClick = { imagePickerLauncher.launch("image/*") }
+                        ) {
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Galería")
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                val photoFile = File.createTempFile(
+                                    "photo_", ".jpg", context.cacheDir
+                                )
+                                cameraImageUri = FileProvider.getUriForFile(
+                                    context, "${context.packageName}.fileprovider", photoFile
+                                )
+                                cameraLauncher.launch(cameraImageUri!!)
+                            }
+                        ) {
+                            Icon(Icons.Default.CameraAlt, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Cámara")
+                        }
                     }
                     if (mediaPath != null) {
                         AssistChip(
                             onClick = {},
-                            label = { Text("1 archivo") },
+                            label = { Text("1 archivo adjunto") },
                             trailingIcon = {
                                 IconButton(
-                                    onClick = { mediaPath = null },
+                                    onClick = { mediaPath = null; mediaError = null },
                                     modifier = Modifier.size(18.dp)
                                 ) {
                                     Icon(Icons.Default.Close, contentDescription = "Quitar", modifier = Modifier.size(14.dp))
                                 }
                             }
+                        )
+                    }
+                    if (mediaError != null) {
+                        Text(
+                            text = mediaError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }

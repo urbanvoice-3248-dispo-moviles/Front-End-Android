@@ -1,6 +1,9 @@
 package com.urbanvoice.app.presentation.navigation
 
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,10 +14,12 @@ import com.urbanvoice.app.presentation.ui.alert.AlertsScreen
 import com.urbanvoice.app.presentation.ui.auth.LoginScreen
 import com.urbanvoice.app.presentation.ui.auth.RegisterScreen
 import com.urbanvoice.app.presentation.ui.home.HomeScreen
+import com.urbanvoice.app.presentation.ui.moderate.ModerationScreen
 import com.urbanvoice.app.presentation.ui.profile.ProfileScreen
 import com.urbanvoice.app.presentation.ui.report.ReportIncidentScreen
 import com.urbanvoice.app.presentation.ui.reports.IncidentDetailScreen
 import com.urbanvoice.app.presentation.ui.reports.MyReportsScreen
+import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 
 object Routes {
     const val LOGIN = "login"
@@ -25,22 +30,31 @@ object Routes {
     const val INCIDENT_DETAIL = "incident_detail/{reportId}"
     const val ALERTS = "alerts"
     const val PROFILE = "profile"
+    const val MODERATE = "moderate"
 }
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
+    val activity = LocalContext.current as ComponentActivity
+    val authViewModel: AuthViewModel = hiltViewModel(activity)
+
     NavHost(navController = navController, startDestination = Routes.LOGIN) {
         composable(Routes.LOGIN) {
-            LoginScreen(onNavigateToRegister = {
-                navController.navigate(Routes.REGISTER)
-            }, onNavigateToHome = {
-                navController.navigate(Routes.HOME) {
-                    popUpTo(Routes.LOGIN) { inclusive = true }
+            LoginScreen(
+                authViewModel = authViewModel,
+                onNavigateToRegister = {
+                    navController.navigate(Routes.REGISTER)
+                },
+                onNavigateToHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
                 }
-            })
+            )
         }
         composable(Routes.REGISTER) {
             RegisterScreen(
+                authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.navigate(Routes.HOME) {
@@ -51,14 +65,17 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.HOME) {
             HomeScreen(
+                authViewModel = authViewModel,
                 onNavigateToReport = { navController.navigate(Routes.REPORT_INCIDENT) },
                 onNavigateToAlerts = { navController.navigate(Routes.ALERTS) },
                 onNavigateToMyReports = { navController.navigate(Routes.MY_REPORTS) },
                 onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
+                onNavigateToModerate = { navController.navigate(Routes.MODERATE) },
                 onNavigateToDetail = { reportId ->
                     navController.navigate("incident_detail/$reportId")
                 },
                 onLogout = {
+                    authViewModel.logout()
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -67,12 +84,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.REPORT_INCIDENT) {
             ReportIncidentScreen(
+                authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = { navController.popBackStack() }
             )
         }
         composable(Routes.MY_REPORTS) {
             MyReportsScreen(
+                authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDetail = { reportId ->
                     navController.navigate("incident_detail/$reportId")
@@ -87,15 +106,28 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             IncidentDetailScreen(reportId = reportId, onNavigateBack = { navController.popBackStack() })
         }
         composable(Routes.ALERTS) {
-            AlertsScreen(onNavigateBack = { navController.popBackStack() })
+            AlertsScreen(
+                authViewModel = authViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(Routes.PROFILE) {
             ProfileScreen(
+                authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onLogout = {
+                    authViewModel.logout()
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+        composable(Routes.MODERATE) {
+            ModerationScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToDetail = { reportId ->
+                    navController.navigate("incident_detail/$reportId")
                 }
             )
         }

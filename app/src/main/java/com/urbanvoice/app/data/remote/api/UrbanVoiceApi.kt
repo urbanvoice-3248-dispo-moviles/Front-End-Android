@@ -53,6 +53,9 @@ interface UrbanVoiceApi {
     @DELETE("reports/{id}")
     suspend fun deleteReport(@Path("id") id: Int)
 
+    @GET("reports/all")
+    suspend fun getAllReports(): List<IncidentReportDto>?
+
     // Locations
     @GET("locations")
     suspend fun getAllLocations(): List<LocationDto>?
@@ -77,13 +80,13 @@ interface UrbanVoiceApi {
 
     // Alerts
     @GET("alerts")
-    suspend fun getAllAlerts(): List<AlertDto>?
+    suspend fun getAllAlerts(): List<AlertDto>
 
     @GET("alerts/{id}")
     suspend fun getAlertById(@Path("id") id: Int): AlertDto
 
     @GET("alerts/user/{userId}")
-    suspend fun getAlertsByUser(@Path("userId") userId: Int): List<AlertDto>?
+    suspend fun getAlertsByUser(@Path("userId") userId: Int): List<AlertDto>
 
     @DELETE("alerts/{id}")
     suspend fun deleteAlert(@Path("id") id: Int)

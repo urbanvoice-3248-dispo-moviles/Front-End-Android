@@ -17,18 +17,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.urbanvoice.app.presentation.ui.components.LoadingOverlay
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
+    authViewModel: AuthViewModel,
     onNavigateToRegister: () -> Unit,
-    onNavigateToHome: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    onNavigateToHome: () -> Unit
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by authViewModel.state.collectAsStateWithLifecycle()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -108,7 +107,7 @@ fun LoginScreen(
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { viewModel.login(email, password) },
+                        onClick = { authViewModel.login(email, password) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),

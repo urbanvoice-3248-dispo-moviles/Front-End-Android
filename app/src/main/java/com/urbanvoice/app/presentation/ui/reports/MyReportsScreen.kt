@@ -23,10 +23,10 @@ import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyReportsScreen(
+    authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToDetail: (Int) -> Unit,
-    viewModel: ReportViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel()
+    viewModel: ReportViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val authState by authViewModel.state.collectAsStateWithLifecycle()

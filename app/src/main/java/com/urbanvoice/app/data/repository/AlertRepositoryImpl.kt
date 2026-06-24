@@ -11,7 +11,7 @@ class AlertRepositoryImpl @Inject constructor(
 ) : AlertRepository {
 
     override suspend fun getAllAlerts(): Result<List<Alert>> {
-        return runCatching { api.getAllAlerts()?.map { it.toDomain() } ?: emptyList() }
+        return runCatching { api.getAllAlerts().map { it.toDomain() } }
     }
 
     override suspend fun getAlertById(id: Int): Result<Alert> {
@@ -19,7 +19,7 @@ class AlertRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAlertsByUser(userId: Int): Result<List<Alert>> {
-        return runCatching { api.getAlertsByUser(userId)?.map { it.toDomain() } ?: emptyList() }
+        return runCatching { api.getAlertsByUser(userId).map { it.toDomain() } }
     }
 
     override suspend fun deleteAlert(id: Int): Result<Unit> {

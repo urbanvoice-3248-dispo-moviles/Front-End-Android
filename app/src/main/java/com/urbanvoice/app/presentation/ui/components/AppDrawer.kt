@@ -23,6 +23,7 @@ fun AppDrawer(
     onMisReportes: () -> Unit,
     onAlertas: () -> Unit,
     onMiPerfil: () -> Unit,
+    onModeracion: (() -> Unit)? = null,
     onCerrarSesion: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -68,6 +69,9 @@ fun AppDrawer(
         DrawerItem(Icons.Default.AddCircle, "Reportar Incidente", onReportarIncidente, Color.Red)
         DrawerItem(Icons.Default.ListAlt, "Mis Reportes", onMisReportes)
         DrawerItem(Icons.Default.Notifications, "Alertas", onAlertas)
+        if (onModeracion != null) {
+            DrawerItem(Icons.Default.AdminPanelSettings, "Moderación", onModeracion)
+        }
         HorizontalDivider()
         DrawerItem(Icons.Default.Person, "Mi Perfil", onMiPerfil)
         if (profile != null) {

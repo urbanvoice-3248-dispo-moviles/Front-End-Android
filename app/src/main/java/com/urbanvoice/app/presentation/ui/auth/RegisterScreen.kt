@@ -14,7 +14,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.urbanvoice.app.presentation.ui.components.LoadingOverlay
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
@@ -22,11 +21,11 @@ import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
+    authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToHome: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    onNavigateToHome: () -> Unit
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by authViewModel.state.collectAsStateWithLifecycle()
     var name by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
@@ -131,7 +130,7 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (password == confirmPassword) {
-                            viewModel.register(
+                            authViewModel.register(
                                 name, lastName, age.toIntOrNull() ?: 0,
                                 email, phone, password
                             )

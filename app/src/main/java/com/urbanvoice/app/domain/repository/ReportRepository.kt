@@ -30,5 +30,7 @@ interface ReportRepository {
         mediaUrl: String?
     ): Result<IncidentReport>
 
+    suspend fun getAllReports(): Result<List<IncidentReport>>
+
     suspend fun deleteReport(id: Int): Result<Unit>
 }

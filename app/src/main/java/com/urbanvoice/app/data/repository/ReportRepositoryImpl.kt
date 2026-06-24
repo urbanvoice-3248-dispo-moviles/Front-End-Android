@@ -50,6 +50,10 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAllReports(): Result<List<IncidentReport>> {
+        return runCatching { api.getAllReports()?.map { it.toDomain() } ?: emptyList() }
+    }
+
     override suspend fun deleteReport(id: Int): Result<Unit> {
         return runCatching { api.deleteReport(id) }
     }
