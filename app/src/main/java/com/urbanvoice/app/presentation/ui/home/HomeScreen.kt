@@ -45,6 +45,7 @@ fun HomeScreen(
     val authState by authViewModel.state.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val mapError = locationState.error ?: reportState.error
+    val mapSummary = "Zonas: ${locationState.locations.size} | Reportes: ${reportState.reports.size}"
 
     val defaultLatLng = LatLng(DEFAULT_LIMA_LATITUDE, DEFAULT_LIMA_LONGITUDE)
 
@@ -183,6 +184,21 @@ fun HomeScreen(
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Text(
+                        text = mapSummary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
         }
