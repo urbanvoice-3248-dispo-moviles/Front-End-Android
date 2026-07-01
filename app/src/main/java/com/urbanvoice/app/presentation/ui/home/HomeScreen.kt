@@ -1,9 +1,5 @@
 package com.urbanvoice.app.presentation.ui.home
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,13 +13,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -31,6 +24,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.urbanvoice.app.presentation.ui.components.AppDrawer
+import com.urbanvoice.app.presentation.ui.utils.rememberLocationPermissionState
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 import com.urbanvoice.app.presentation.viewmodel.LocationViewModel
 import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
@@ -60,8 +54,6 @@ fun HomeScreen(
     val authState by authViewModel.state.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-
     val defaultLatLng = LatLng(-12.0464, -77.0428)
     var userLocation by remember { mutableStateOf(defaultLatLng) }
     var locationPermissionGranted by remember { mutableStateOf(false) }
@@ -73,48 +65,18 @@ fun HomeScreen(
         position = CameraPosition.fromLatLngZoom(defaultLatLng, 12f)
     }
 
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        locationPermissionGranted = granted
-        if (granted) {
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    userLocation = LatLng(location.latitude, location.longitude)
-                    scope.launch {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newLatLngZoom(userLocation, 14f)
-                        )
-                    }
-                    reportViewModel.getNearbyReports(location.latitude, location.longitude)
-                }
-            }
+    val locationPermissionState = rememberLocationPermissionState { latitude, longitude ->
+        locationPermissionGranted = true
+        userLocation = LatLng(latitude, longitude)
+        scope.launch {
+            cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(userLocation, 14f))
         }
+        reportViewModel.getNearbyReports(latitude, longitude)
     }
 
     LaunchedEffect(Unit) {
         locationViewModel.getAllLocations()
-        val hasPermission = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        if (hasPermission) {
-            locationPermissionGranted = true
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    userLocation = LatLng(location.latitude, location.longitude)
-                    scope.launch {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newLatLngZoom(userLocation, 14f)
-                        )
-                    }
-                    reportViewModel.getNearbyReports(location.latitude, location.longitude)
-                }
-            }
-        } else {
-            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
+        locationPermissionState.requestPermission()
     }
 
     val filteredReports = reportState.reports.filter { it.incidentType in selectedTypes }

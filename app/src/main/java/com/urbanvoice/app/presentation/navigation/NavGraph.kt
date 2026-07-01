@@ -20,6 +20,8 @@ import com.urbanvoice.app.presentation.ui.report.ReportIncidentScreen
 import com.urbanvoice.app.presentation.ui.reports.IncidentDetailScreen
 import com.urbanvoice.app.presentation.ui.reports.MyReportsScreen
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
+import com.urbanvoice.app.presentation.viewmodel.ProfileViewModel
+import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 
 object Routes {
     const val LOGIN = "login"
@@ -63,9 +65,11 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 }
             )
         }
-        composable(Routes.HOME) {
+        composable(Routes.HOME) { backStackEntry ->
+            val reportViewModel: ReportViewModel = hiltViewModel(backStackEntry)
             HomeScreen(
                 authViewModel = authViewModel,
+                reportViewModel = reportViewModel,
                 onNavigateToReport = { navController.navigate(Routes.REPORT_INCIDENT) },
                 onNavigateToAlerts = { navController.navigate(Routes.ALERTS) },
                 onNavigateToMyReports = { navController.navigate(Routes.MY_REPORTS) },
@@ -77,33 +81,42 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Routes.LOGIN) {
-                        popUpTo(0) { inclusive = true }
+                        popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
             )
         }
-        composable(Routes.REPORT_INCIDENT) {
+        composable(Routes.REPORT_INCIDENT) { backStackEntry ->
+            val reportViewModel: ReportViewModel = hiltViewModel(backStackEntry)
             ReportIncidentScreen(
                 authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToHome = { navController.popBackStack() }
+                onNavigateToHome = { navController.popBackStack() },
+                viewModel = reportViewModel
             )
         }
-        composable(Routes.MY_REPORTS) {
+        composable(Routes.MY_REPORTS) { backStackEntry ->
+            val reportViewModel: ReportViewModel = hiltViewModel(backStackEntry)
             MyReportsScreen(
                 authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDetail = { reportId ->
                     navController.navigate("incident_detail/$reportId")
-                }
+                },
+                viewModel = reportViewModel
             )
         }
         composable(
             route = Routes.INCIDENT_DETAIL,
             arguments = listOf(navArgument("reportId") { type = NavType.IntType })
         ) { backStackEntry ->
+            val reportViewModel: ReportViewModel = hiltViewModel(backStackEntry)
             val reportId = backStackEntry.arguments?.getInt("reportId") ?: return@composable
-            IncidentDetailScreen(reportId = reportId, onNavigateBack = { navController.popBackStack() })
+            IncidentDetailScreen(
+                reportId = reportId,
+                onNavigateBack = { navController.popBackStack() },
+                viewModel = reportViewModel
+            )
         }
         composable(Routes.ALERTS) {
             AlertsScreen(
@@ -111,24 +124,28 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        composable(Routes.PROFILE) {
+        composable(Routes.PROFILE) { backStackEntry ->
+            val profileViewModel: ProfileViewModel = hiltViewModel(backStackEntry)
             ProfileScreen(
                 authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Routes.LOGIN) {
-                        popUpTo(0) { inclusive = true }
+                        popUpTo(Routes.LOGIN) { inclusive = true }
                     }
-                }
+                },
+                viewModel = profileViewModel
             )
         }
-        composable(Routes.MODERATE) {
+        composable(Routes.MODERATE) { backStackEntry ->
+            val reportViewModel: ReportViewModel = hiltViewModel(backStackEntry)
             ModerationScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDetail = { reportId ->
                     navController.navigate("incident_detail/$reportId")
-                }
+                },
+                viewModel = reportViewModel
             )
         }
     }

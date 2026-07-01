@@ -34,6 +34,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) onNavigateToHome()
@@ -61,40 +62,70 @@ fun RegisterScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedTextField(
-                    value = name, onValueChange = { name = it },
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Nombre") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = lastName, onValueChange = { lastName = it },
+                    value = lastName,
+                    onValueChange = {
+                        lastName = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Apellido") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = age, onValueChange = { age = it },
+                    value = age,
+                    onValueChange = {
+                        age = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Edad") },
                     leadingIcon = { Icon(Icons.Default.Numbers, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = email, onValueChange = { email = it },
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Correo electrónico") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = phone, onValueChange = { phone = it },
+                    value = phone,
+                    onValueChange = {
+                        phone = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Teléfono") },
                     leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = password, onValueChange = { password = it },
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Contraseña") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
@@ -112,16 +143,22 @@ fun RegisterScreen(
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = confirmPassword, onValueChange = { confirmPassword = it },
+                    value = confirmPassword,
+                    onValueChange = {
+                        confirmPassword = it
+                        authViewModel.clearError()
+                        validationError = null
+                    },
                     label = { Text("Confirmar contraseña") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
-                if (state.error != null) {
+                val authError = state.error ?: validationError
+                if (authError != null) {
                     Text(
-                        text = state.error!!,
+                        text = authError,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -129,11 +166,23 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        if (password == confirmPassword) {
-                            authViewModel.register(
-                                name, lastName, age.toIntOrNull() ?: 0,
-                                email, phone, password
-                            )
+                        val ageValue = age.toIntOrNull()
+                        when {
+                            name.isBlank() -> validationError = "Ingresa tu nombre"
+                            lastName.isBlank() -> validationError = "Ingresa tu apellido"
+                            ageValue == null || ageValue <= 0 -> validationError = "Ingresa una edad válida"
+                            email.isBlank() -> validationError = "Ingresa tu correo electrónico"
+                            !email.contains("@") -> validationError = "Ingresa un correo válido"
+                            phone.isBlank() -> validationError = "Ingresa tu teléfono"
+                            password.length < 6 -> validationError = "La contraseña debe tener al menos 6 caracteres"
+                            password != confirmPassword -> validationError = "Las contraseñas no coinciden"
+                            else -> {
+                                validationError = null
+                                authViewModel.register(
+                                    name.trim(), lastName.trim(), ageValue,
+                                    email.trim(), phone.trim(), password
+                                )
+                            }
                         }
                     },
                     modifier = Modifier

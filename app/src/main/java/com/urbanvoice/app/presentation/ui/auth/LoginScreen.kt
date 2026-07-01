@@ -31,6 +31,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) onNavigateToHome()
@@ -69,7 +70,11 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(48.dp))
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            authViewModel.clearError()
+                            validationError = null
+                        },
                         label = { Text("Correo electrónico") },
                         leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -79,7 +84,11 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            authViewModel.clearError()
+                            validationError = null
+                        },
                         label = { Text("Contraseña") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                         trailingIcon = {
@@ -97,17 +106,27 @@ fun LoginScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    if (state.error != null) {
+                    val authError = state.error ?: validationError
+                    if (authError != null) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = state.error!!,
+                            text = authError,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { authViewModel.login(email, password) },
+                        onClick = {
+                            when {
+                                email.isBlank() -> validationError = "Ingresa tu correo electrónico"
+                                password.isBlank() -> validationError = "Ingresa tu contraseña"
+                                else -> {
+                                    validationError = null
+                                    authViewModel.login(email.trim(), password)
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
