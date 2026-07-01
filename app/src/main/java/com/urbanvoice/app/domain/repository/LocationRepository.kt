@@ -12,5 +12,4 @@ interface LocationRepository {
     ): Result<List<Location>>
 
     suspend fun getLocationsByDistrict(district: String): Result<List<Location>>
-    suspend fun getDangerousLocations(minRiskLevel: Int): Result<List<Location>>
 }

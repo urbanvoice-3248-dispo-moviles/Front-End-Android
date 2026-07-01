@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,6 +28,29 @@ class AuthViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(AuthState())
     val state: StateFlow<AuthState> = _state.asStateFlow()
+
+    init {
+        checkSavedSession()
+    }
+
+    private fun checkSavedSession() {
+        viewModelScope.launch {
+            val token = authRepository.getToken()
+            if (token != null) {
+                _state.value = _state.value.copy(isLoading = true)
+                profileRepository.getProfileById(1)
+                    .onSuccess { profile ->
+                        _state.value = _state.value.copy(
+                            isLoading = false, isAuthenticated = true, profile = profile
+                        )
+                    }
+                    .onFailure {
+                        authRepository.logout()
+                        _state.value = _state.value.copy(isLoading = false)
+                    }
+            }
+        }
+    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
@@ -66,7 +90,10 @@ class AuthViewModel @Inject constructor(
     }
 
     fun logout() {
-        _state.value = AuthState()
+        viewModelScope.launch {
+            authRepository.logout()
+            _state.value = AuthState()
+        }
     }
 
     fun clearError() {

@@ -5,6 +5,10 @@ import retrofit2.http.*
 
 interface UrbanVoiceApi {
 
+    // Auth
+    @POST("auth/login")
+    suspend fun login(@Body request: LoginRequest): LoginResponse
+
     // Profiles
     @POST("profiles")
     suspend fun createProfile(@Body request: CreateProfileRequest): UserProfileDto
@@ -23,6 +27,18 @@ interface UrbanVoiceApi {
 
     @DELETE("profiles/{id}")
     suspend fun deleteProfile(@Path("id") id: Int)
+
+    // Districts
+    @GET("districts")
+    suspend fun getAllDistricts(): List<DistrictDto>
+
+    @GET("districts/{id}")
+    suspend fun getDistrictById(@Path("id") id: Int): DistrictDto
+
+    @GET("districts/dangerous")
+    suspend fun getDangerousDistricts(
+        @Query("minRiskLevel") minRiskLevel: Int = 3
+    ): List<DistrictDto>
 
     // Reports
     @POST("reports")
@@ -72,11 +88,6 @@ interface UrbanVoiceApi {
 
     @GET("locations/district/{district}")
     suspend fun getLocationsByDistrict(@Path("district") district: String): List<LocationDto>?
-
-    @GET("locations/dangerous")
-    suspend fun getDangerousLocations(
-        @Query("minRiskLevel") minRiskLevel: Int = 3
-    ): List<LocationDto>?
 
     // Alerts
     @GET("alerts")

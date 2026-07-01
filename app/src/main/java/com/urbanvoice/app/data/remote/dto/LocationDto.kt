@@ -9,16 +9,12 @@ data class LocationDto(
     val longitude: Double,
     val address: String?,
     val district: String,
-    @SerializedName("risk_level") val riskLevel: Int,
-    @SerializedName("risk_category") val riskCategory: String,
-    @SerializedName("incident_count") val incidentCount: Int,
     val description: String?,
-    @SerializedName("last_updated") val lastUpdated: String
+    @SerializedName("created_at") val createdAt: String
 )
 
 fun LocationDto.toDomain() = Location(
     id = id, latitude = latitude, longitude = longitude,
-    address = address, district = district, riskLevel = riskLevel,
-    riskCategory = riskCategory, incidentCount = incidentCount,
-    description = description, lastUpdated = lastUpdated
+    address = address, district = district,
+    description = description, createdAt = createdAt
 )

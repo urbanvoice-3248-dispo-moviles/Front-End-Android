@@ -12,4 +12,7 @@ interface AuthRepository {
         phoneNumber: String,
         password: String
     ): Result<UserProfile>
+    suspend fun getToken(): String?
+    suspend fun isLoggedIn(): Boolean
+    suspend fun logout()
 }

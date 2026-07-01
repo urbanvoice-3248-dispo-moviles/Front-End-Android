@@ -27,8 +27,4 @@ class LocationRepositoryImpl @Inject constructor(
     override suspend fun getLocationsByDistrict(district: String): Result<List<Location>> {
         return runCatching { api.getLocationsByDistrict(district)?.map { it.toDomain() } ?: emptyList() }
     }
-
-    override suspend fun getDangerousLocations(minRiskLevel: Int): Result<List<Location>> {
-        return runCatching { api.getDangerousLocations(minRiskLevel)?.map { it.toDomain() } ?: emptyList() }
-    }
 }

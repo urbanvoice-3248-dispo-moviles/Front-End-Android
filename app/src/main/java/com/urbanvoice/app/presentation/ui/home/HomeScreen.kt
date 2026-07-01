@@ -26,6 +26,7 @@ import com.google.maps.android.compose.*
 import com.urbanvoice.app.presentation.ui.components.AppDrawer
 import com.urbanvoice.app.presentation.ui.utils.rememberLocationPermissionState
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
+import com.urbanvoice.app.presentation.viewmodel.DistrictViewModel
 import com.urbanvoice.app.presentation.viewmodel.LocationViewModel
 import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 import kotlinx.coroutines.launch
@@ -47,10 +48,12 @@ fun HomeScreen(
     onLogout: () -> Unit,
     locationViewModel: LocationViewModel = hiltViewModel(),
     reportViewModel: ReportViewModel = hiltViewModel(),
+    districtViewModel: DistrictViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val locationState by locationViewModel.state.collectAsStateWithLifecycle()
     val reportState by reportViewModel.state.collectAsStateWithLifecycle()
+    val districtState by districtViewModel.state.collectAsStateWithLifecycle()
     val authState by authViewModel.state.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -76,6 +79,7 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         locationViewModel.getAllLocations()
+        districtViewModel.getAllDistricts()
         locationPermissionState.requestPermission()
     }
 
@@ -171,14 +175,28 @@ fun HomeScreen(
                         isMyLocationEnabled = locationPermissionGranted
                     )
                 ) {
+                    districtState.districts.forEach { district ->
+                        if (district.boundary.isNotEmpty()) {
+                            val avgLat = district.boundary.map { it.latitude }.average()
+                            val avgLng = district.boundary.map { it.longitude }.average()
+                            MarkerInfoWindow(
+                                state = rememberMarkerState(
+                                    position = LatLng(avgLat, avgLng)
+                                ),
+                                icon = remember(district.riskLevel) { getRiskMarkerIcon(district.riskLevel) },
+                                title = district.name,
+                                snippet = "Riesgo: ${district.riskCategory} - Incidentes: ${district.incidentCount}"
+                            )
+                        }
+                    }
                     locationState.locations.forEach { loc ->
                         MarkerInfoWindow(
                             state = rememberMarkerState(
                                 position = LatLng(loc.latitude, loc.longitude)
                             ),
-                            icon = remember(loc.riskLevel) { getRiskMarkerIcon(loc.riskLevel) },
-                            title = loc.district,
-                            snippet = "Riesgo: ${loc.riskCategory} - Incidentes: ${loc.incidentCount}"
+                            icon = remember { getLocationMarkerIcon() },
+                            title = loc.address ?: loc.district,
+                            snippet = loc.district
                         )
                     }
                     filteredReports.forEach { report ->
@@ -270,6 +288,10 @@ fun HomeScreen(
             }
         }
     }
+}
+
+private fun getLocationMarkerIcon(): BitmapDescriptor {
+    return createCircleMarker(android.graphics.Color.parseColor("#757575"), android.graphics.Color.WHITE, "•")
 }
 
 private fun getRiskMarkerIcon(riskLevel: Int): BitmapDescriptor {

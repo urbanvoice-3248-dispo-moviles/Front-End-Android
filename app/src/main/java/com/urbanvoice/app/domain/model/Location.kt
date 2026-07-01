@@ -6,9 +6,6 @@ data class Location(
     val longitude: Double,
     val address: String?,
     val district: String,
-    val riskLevel: Int,
-    val riskCategory: String,
-    val incidentCount: Int,
     val description: String?,
-    val lastUpdated: String
+    val createdAt: String
 )

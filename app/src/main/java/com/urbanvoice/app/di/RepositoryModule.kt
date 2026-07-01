@@ -30,5 +30,9 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
+    abstract fun bindDistrictRepository(impl: DistrictRepositoryImpl): DistrictRepository
+
+    @Binds
+    @Singleton
     abstract fun bindAlertRepository(impl: AlertRepositoryImpl): AlertRepository
 }
