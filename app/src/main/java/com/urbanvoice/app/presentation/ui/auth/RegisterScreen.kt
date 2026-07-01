@@ -33,6 +33,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var passwordMismatchError by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) onNavigateToHome()
@@ -86,7 +87,10 @@ fun RegisterScreen(
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = password, onValueChange = { password = it },
+                    value = password, onValueChange = {
+                        password = it
+                        passwordMismatchError = false
+                    },
                     label = { Text("Contraseña") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
@@ -104,16 +108,19 @@ fun RegisterScreen(
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = confirmPassword, onValueChange = { confirmPassword = it },
+                    value = confirmPassword, onValueChange = {
+                        confirmPassword = it
+                        passwordMismatchError = false
+                    },
                     label = { Text("Confirmar contraseña") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
-                if (state.error != null) {
+                if (passwordMismatchError || state.error != null) {
                     Text(
-                        text = state.error!!,
+                        text = if (passwordMismatchError) "Las contraseñas no coinciden" else state.error!!,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -122,10 +129,13 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (password == confirmPassword) {
+                            passwordMismatchError = false
                             viewModel.register(
                                 name, lastName, age.toIntOrNull() ?: 0,
                                 email, phone, password
                             )
+                        } else {
+                            passwordMismatchError = true
                         }
                     },
                     modifier = Modifier
