@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.urbanvoice.app.presentation.ui.alert.AlertsScreen
 import com.urbanvoice.app.presentation.ui.auth.LoginScreen
 import com.urbanvoice.app.presentation.ui.auth.RegisterScreen
+import com.urbanvoice.app.presentation.ui.auth.TermsScreen
 import com.urbanvoice.app.presentation.ui.home.HomeScreen
 import com.urbanvoice.app.presentation.ui.moderate.ModerationScreen
 import com.urbanvoice.app.presentation.ui.profile.ProfileScreen
@@ -26,6 +27,7 @@ import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val TERMS = "terms"
     const val HOME = "home"
     const val REPORT_INCIDENT = "report_incident"
     const val MY_REPORTS = "my_reports"
@@ -51,6 +53,11 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
+                },
+                onNavigateToTerms = {
+                    navController.navigate(Routes.TERMS) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
                 }
             )
         }
@@ -58,9 +65,25 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             RegisterScreen(
                 authViewModel = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToHome = {
-                    navController.navigate(Routes.HOME) {
+                onNavigateToTerms = {
+                    navController.navigate(Routes.TERMS) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Routes.TERMS) {
+            TermsScreen(
+                onAccept = {
+                    authViewModel.onTermsAccepted()
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.TERMS) { inclusive = true }
+                    }
+                },
+                onDecline = {
+                    authViewModel.logout()
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.TERMS) { inclusive = true }
                     }
                 }
             )

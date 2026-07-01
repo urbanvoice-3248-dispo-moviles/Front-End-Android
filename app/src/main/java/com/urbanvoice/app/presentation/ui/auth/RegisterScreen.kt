@@ -23,7 +23,7 @@ import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 fun RegisterScreen(
     authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToTerms: () -> Unit
 ) {
     val state by authViewModel.state.collectAsStateWithLifecycle()
     var name by remember { mutableStateOf("") }
@@ -37,7 +37,7 @@ fun RegisterScreen(
     var validationError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(state.isAuthenticated) {
-        if (state.isAuthenticated) onNavigateToHome()
+        if (state.isAuthenticated) onNavigateToTerms()
     }
 
     Scaffold(

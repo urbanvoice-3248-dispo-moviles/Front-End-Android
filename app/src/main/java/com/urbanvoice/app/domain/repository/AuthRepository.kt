@@ -15,5 +15,7 @@ interface AuthRepository {
     suspend fun getToken(): String?
     suspend fun getUserId(): Int?
     suspend fun isLoggedIn(): Boolean
+    suspend fun isTermsAccepted(): Boolean
+    suspend fun acceptTerms()
     suspend fun logout()
 }

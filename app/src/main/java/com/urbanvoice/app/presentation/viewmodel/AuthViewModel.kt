@@ -16,6 +16,7 @@ import javax.inject.Inject
 data class AuthState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
+    val needsTermsAcceptance: Boolean = false,
     val profile: UserProfile? = null,
     val error: String? = null
 )
@@ -58,8 +59,10 @@ class AuthViewModel @Inject constructor(
             _state.value = _state.value.copy(isLoading = true, error = null)
             authRepository.login(email, password)
                 .onSuccess { profile ->
+                    val termsAccepted = authRepository.isTermsAccepted()
                     _state.value = _state.value.copy(
-                        isLoading = false, isAuthenticated = true, profile = profile
+                        isLoading = false, isAuthenticated = true,
+                        needsTermsAcceptance = !termsAccepted, profile = profile
                     )
                 }
                 .onFailure {
@@ -79,7 +82,8 @@ class AuthViewModel @Inject constructor(
             authRepository.register(name, lastName, age, email, phoneNumber, password)
                 .onSuccess { profile ->
                     _state.value = _state.value.copy(
-                        isLoading = false, isAuthenticated = true, profile = profile
+                        isLoading = false, isAuthenticated = true,
+                        needsTermsAcceptance = true, profile = profile
                     )
                 }
                 .onFailure {
@@ -87,6 +91,13 @@ class AuthViewModel @Inject constructor(
                         isLoading = false, error = it.message ?: "Error al registrarse"
                     )
                 }
+        }
+    }
+
+    fun onTermsAccepted() {
+        viewModelScope.launch {
+            authRepository.acceptTerms()
+            _state.value = _state.value.copy(needsTermsAcceptance = false)
         }
     }
 

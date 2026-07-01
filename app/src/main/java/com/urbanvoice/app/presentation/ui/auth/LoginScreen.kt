@@ -25,7 +25,8 @@ import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 fun LoginScreen(
     authViewModel: AuthViewModel,
     onNavigateToRegister: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    onNavigateToTerms: () -> Unit
 ) {
     val state by authViewModel.state.collectAsStateWithLifecycle()
     var email by remember { mutableStateOf("") }
@@ -33,8 +34,11 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(state.isAuthenticated) {
-        if (state.isAuthenticated) onNavigateToHome()
+    LaunchedEffect(state.isAuthenticated, state.needsTermsAcceptance) {
+        if (state.isAuthenticated) {
+            if (state.needsTermsAcceptance) onNavigateToTerms()
+            else onNavigateToHome()
+        }
     }
 
     Scaffold { padding ->
