@@ -13,6 +13,7 @@ interface AuthRepository {
         password: String
     ): Result<UserProfile>
     suspend fun getToken(): String?
+    suspend fun getUserId(): Int?
     suspend fun isLoggedIn(): Boolean
     suspend fun logout()
 }

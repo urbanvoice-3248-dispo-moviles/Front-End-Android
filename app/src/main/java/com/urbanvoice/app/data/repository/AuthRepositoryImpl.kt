@@ -44,6 +44,10 @@ class AuthRepositoryImpl @Inject constructor(
         return tokenManager.token.firstOrNull()
     }
 
+    override suspend fun getUserId(): Int? {
+        return tokenManager.userId.firstOrNull()
+    }
+
     override suspend fun isLoggedIn(): Boolean {
         return tokenManager.token.firstOrNull() != null
     }

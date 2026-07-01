@@ -36,9 +36,10 @@ class AuthViewModel @Inject constructor(
     private fun checkSavedSession() {
         viewModelScope.launch {
             val token = authRepository.getToken()
-            if (token != null) {
+            val savedUserId = authRepository.getUserId()
+            if (token != null && savedUserId != null) {
                 _state.value = _state.value.copy(isLoading = true)
-                profileRepository.getProfileById(1)
+                profileRepository.getProfileById(savedUserId)
                     .onSuccess { profile ->
                         _state.value = _state.value.copy(
                             isLoading = false, isAuthenticated = true, profile = profile

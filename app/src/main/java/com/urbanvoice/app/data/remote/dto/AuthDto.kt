@@ -8,7 +8,7 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val id: Int,
+    @SerializedName("user_id") val id: Int,
     val email: String,
     val token: String
 )
