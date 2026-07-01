@@ -15,14 +15,14 @@ import com.urbanvoice.app.presentation.ui.auth.LoginScreen
 import com.urbanvoice.app.presentation.ui.auth.RegisterScreen
 import com.urbanvoice.app.presentation.ui.auth.TermsScreen
 import com.urbanvoice.app.presentation.ui.home.HomeScreen
+import com.urbanvoice.app.presentation.ui.locationsharing.LocationSharingScreen
 import com.urbanvoice.app.presentation.ui.moderate.ModerationScreen
 import com.urbanvoice.app.presentation.ui.profile.ProfileScreen
 import com.urbanvoice.app.presentation.ui.report.ReportIncidentScreen
 import com.urbanvoice.app.presentation.ui.reports.IncidentDetailScreen
 import com.urbanvoice.app.presentation.ui.reports.MyReportsScreen
-import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
-import com.urbanvoice.app.presentation.viewmodel.ProfileViewModel
-import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
+import com.urbanvoice.app.presentation.ui.route.SafeRouteScreen
+import com.urbanvoice.app.presentation.viewmodel.*
 
 object Routes {
     const val LOGIN = "login"
@@ -35,12 +35,18 @@ object Routes {
     const val ALERTS = "alerts"
     const val PROFILE = "profile"
     const val MODERATE = "moderate"
+    const val LOCATION_SHARING = "location_sharing"
+    const val SAFE_ROUTE = "safe_route"
 }
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
     val activity = LocalContext.current as ComponentActivity
     val authViewModel: AuthViewModel = hiltViewModel(activity)
+
+    var sharedLatitude = 0.0
+    var sharedLongitude = 0.0
+    var sharedLocationGranted = false
 
     NavHost(navController = navController, startDestination = Routes.LOGIN) {
         composable(Routes.LOGIN) {
@@ -100,6 +106,17 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onNavigateToModerate = { navController.navigate(Routes.MODERATE) },
                 onNavigateToDetail = { reportId ->
                     navController.navigate("incident_detail/$reportId")
+                },
+                onNavigateToLocationSharing = { lat, lng, granted ->
+                    sharedLatitude = lat
+                    sharedLongitude = lng
+                    sharedLocationGranted = granted
+                    navController.navigate(Routes.LOCATION_SHARING)
+                },
+                onNavigateToSafeRoute = { lat, lng ->
+                    sharedLatitude = lat
+                    sharedLongitude = lng
+                    navController.navigate(Routes.SAFE_ROUTE)
                 },
                 onLogout = {
                     authViewModel.logout()
@@ -169,6 +186,26 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                     navController.navigate("incident_detail/$reportId")
                 },
                 viewModel = reportViewModel
+            )
+        }
+        composable(Routes.LOCATION_SHARING) { backStackEntry ->
+            val locationSharingViewModel: LocationSharingViewModel = hiltViewModel(backStackEntry)
+            LocationSharingScreen(
+                authViewModel = authViewModel,
+                locationSharingViewModel = locationSharingViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                locationPermissionGranted = sharedLocationGranted,
+                userLatitude = sharedLatitude,
+                userLongitude = sharedLongitude
+            )
+        }
+        composable(Routes.SAFE_ROUTE) { backStackEntry ->
+            val routeViewModel: RouteViewModel = hiltViewModel(backStackEntry)
+            SafeRouteScreen(
+                routeViewModel = routeViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                userLatitude = sharedLatitude,
+                userLongitude = sharedLongitude
             )
         }
     }

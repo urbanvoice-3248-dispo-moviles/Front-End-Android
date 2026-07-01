@@ -35,4 +35,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAlertRepository(impl: AlertRepositoryImpl): AlertRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationSharingRepository(impl: LocationSharingRepositoryImpl): LocationSharingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRouteRepository(impl: RouteRepositoryImpl): RouteRepository
 }

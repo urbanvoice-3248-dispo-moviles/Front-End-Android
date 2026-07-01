@@ -46,6 +46,8 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToModerate: (() -> Unit)? = null,
     onNavigateToDetail: (Int) -> Unit,
+    onNavigateToLocationSharing: (Double, Double, Boolean) -> Unit = { _, _, _ -> },
+    onNavigateToSafeRoute: (Double, Double) -> Unit = { _, _ -> },
     onLogout: () -> Unit,
     locationViewModel: LocationViewModel = hiltViewModel(),
     reportViewModel: ReportViewModel = hiltViewModel(),
@@ -107,6 +109,19 @@ fun HomeScreen(
                 onAlertas = {
                     scope.launch { drawerState.close() }
                     onNavigateToAlerts()
+                },
+                onCompartirUbicacion = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToLocationSharing(
+                        userLocation.latitude, userLocation.longitude,
+                        locationPermissionGranted
+                    )
+                },
+                onRutaSegura = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToSafeRoute(
+                        userLocation.latitude, userLocation.longitude
+                    )
                 },
                 onMiPerfil = {
                     scope.launch { drawerState.close() }

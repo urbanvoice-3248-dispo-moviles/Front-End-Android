@@ -22,14 +22,19 @@ class AuthInterceptor @Inject constructor(
             return chain.proceed(original)
         }
 
-        val token = runBlocking { tokenManager.token.firstOrNull() }
-
-        return if (token != null) {
-            val request = original.newBuilder()
-                .header("Authorization", "Bearer $token")
-                .build()
-            chain.proceed(request)
-        } else {
+        return try {
+            val token = runBlocking { tokenManager.token.firstOrNull() }
+            
+            if (token != null) {
+                val request = original.newBuilder()
+                    .header("Authorization", "Bearer $token")
+                    .build()
+                chain.proceed(request)
+            } else {
+                chain.proceed(original)
+            }
+        } catch (e: Exception) {
+            // If token retrieval fails, proceed without auth header
             chain.proceed(original)
         }
     }

@@ -52,14 +52,48 @@ fun rememberLocationPermissionState(
     return LocationPermissionState(granted = isGrantedState, requestPermission = requestPermission)
 }
 
+fun decodePolyline(encoded: String): List<Pair<Double, Double>> {
+    val poly = mutableListOf<Pair<Double, Double>>()
+    var index = 0
+    var lat = 0
+    var lng = 0
+    while (index < encoded.length) {
+        var sum = 0
+        var shift = 0
+        var b: Int
+        do {
+            b = encoded[index++].code - 63
+            sum = sum or ((b and 0x1f) shl shift)
+            shift += 5
+        } while (b >= 0x20)
+        val dlat = if (sum and 1 != 0) (sum shr 1).inv() else sum shr 1
+        lat += dlat
+        shift = 0
+        sum = 0
+        do {
+            b = encoded[index++].code - 63
+            sum = sum or ((b and 0x1f) shl shift)
+            shift += 5
+        } while (b >= 0x20)
+        val dlng = if (sum and 1 != 0) (sum shr 1).inv() else sum shr 1
+        lng += dlng
+        poly.add(Pair(lat / 1e5, lng / 1e5))
+    }
+    return poly
+}
+
 private fun requestLastLocation(
     context: Context,
     onLocationFound: (Double, Double) -> Unit
 ) {
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-        if (location != null) {
-            onLocationFound(location.latitude, location.longitude)
+    fusedLocationClient.lastLocation
+        .addOnSuccessListener { location ->
+            if (location != null) {
+                onLocationFound(location.latitude, location.longitude)
+            }
         }
-    }
+        .addOnFailureListener { exception ->
+            android.util.Log.e("LocationPermissionHelper", "Error getting last location", exception)
+        }
 }

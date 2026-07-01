@@ -35,6 +35,13 @@ fun ProfileScreen(
         authState.profile?.let { viewModel.getProfileById(it.id) }
     }
 
+    // Detectar cuando logout se completa
+    LaunchedEffect(authState.isAuthenticated) {
+        if (!authState.isAuthenticated && authState.profile == null) {
+            onLogout()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -47,7 +54,6 @@ fun ProfileScreen(
                 actions = {
                     IconButton(onClick = {
                         authViewModel.logout()
-                        onLogout()
                     }) {
                         Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión")
                     }

@@ -1,6 +1,8 @@
 package com.urbanvoice.app.di
 
 import com.urbanvoice.app.data.remote.AuthInterceptor
+import com.urbanvoice.app.data.remote.api.LocationSharingApi
+import com.urbanvoice.app.data.remote.api.RouteAssessmentApi
 import com.urbanvoice.app.data.remote.api.UrbanVoiceApi
 import dagger.Module
 import dagger.Provides
@@ -48,5 +50,17 @@ object NetworkModule {
     @Singleton
     fun provideUrbanVoiceApi(retrofit: Retrofit): UrbanVoiceApi {
         return retrofit.create(UrbanVoiceApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocationSharingApi(retrofit: Retrofit): LocationSharingApi {
+        return retrofit.create(LocationSharingApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRouteAssessmentApi(retrofit: Retrofit): RouteAssessmentApi {
+        return retrofit.create(RouteAssessmentApi::class.java)
     }
 }

@@ -22,6 +22,8 @@ fun AppDrawer(
     onReportarIncidente: () -> Unit,
     onMisReportes: () -> Unit,
     onAlertas: () -> Unit,
+    onCompartirUbicacion: () -> Unit,
+    onRutaSegura: () -> Unit,
     onMiPerfil: () -> Unit,
     onModeracion: (() -> Unit)? = null,
     onCerrarSesion: () -> Unit
@@ -69,6 +71,8 @@ fun AppDrawer(
         DrawerItem(Icons.Default.AddCircle, "Reportar Incidente", onReportarIncidente, Color.Red)
         DrawerItem(Icons.Default.ListAlt, "Mis Reportes", onMisReportes)
         DrawerItem(Icons.Default.Notifications, "Alertas", onAlertas)
+        DrawerItem(Icons.Default.LocationOn, "Compartir Ubicación", onCompartirUbicacion)
+        DrawerItem(Icons.Default.Route, "Ruta Segura", onRutaSegura)
         if (onModeracion != null) {
             DrawerItem(Icons.Default.AdminPanelSettings, "Moderación", onModeracion)
         }
