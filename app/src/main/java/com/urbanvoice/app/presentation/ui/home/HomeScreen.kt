@@ -44,6 +44,7 @@ fun HomeScreen(
     val reportState by reportViewModel.state.collectAsStateWithLifecycle()
     val authState by authViewModel.state.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val mapError = locationState.error ?: reportState.error
 
     val defaultLatLng = LatLng(DEFAULT_LIMA_LATITUDE, DEFAULT_LIMA_LONGITUDE)
 
@@ -164,6 +165,24 @@ fun HomeScreen(
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
+                }
+
+                if (mapError != null) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.errorContainer
+                    ) {
+                        Text(
+                            text = mapError,
+                            modifier = Modifier.padding(12.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
