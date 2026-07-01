@@ -132,7 +132,7 @@ fun RegisterScreen(
                             passwordMismatchError = false
                             viewModel.register(
                                 name, lastName, age.toIntOrNull() ?: 0,
-                                email, phone, password
+                                email.trim(), phone, password
                             )
                         } else {
                             passwordMismatchError = true
