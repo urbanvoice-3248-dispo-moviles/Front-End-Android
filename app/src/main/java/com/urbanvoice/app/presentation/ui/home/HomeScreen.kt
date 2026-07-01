@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import com.google.maps.android.compose.Polygon
 import com.urbanvoice.app.presentation.ui.components.AppDrawer
 import com.urbanvoice.app.presentation.ui.utils.rememberLocationPermissionState
 import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
@@ -63,6 +64,7 @@ fun HomeScreen(
 
     var selectedTypes by remember { mutableStateOf(allIncidentTypes.map { it.first }.toSet()) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var showRiskMap by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(defaultLatLng, 12f)
@@ -90,7 +92,10 @@ fun HomeScreen(
         drawerContent = {
             AppDrawer(
                 profile = authState.profile,
-                onMapaDeRiesgo = { scope.launch { drawerState.close() } },
+                onMapaDeRiesgo = {
+                    showRiskMap = true
+                    scope.launch { drawerState.close() }
+                },
                 onReportarIncidente = {
                     scope.launch { drawerState.close() }
                     onNavigateToReport()
@@ -122,21 +127,27 @@ fun HomeScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("UrbanVoice") },
+                    title = { Text(if (showRiskMap) "Mapa de Riesgo" else "UrbanVoice") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Filled.Menu, contentDescription = "Menú")
                         }
                     },
                     actions = {
-                        IconButton(onClick = { showFilterSheet = true }) {
-                            Icon(
-                                Icons.Default.FilterList,
-                                contentDescription = "Filtrar",
-                                tint = if (selectedTypes.size < allIncidentTypes.size)
-                                    MaterialTheme.colorScheme.primary
-                                else Color.Gray
-                            )
+                        if (showRiskMap) {
+                            TextButton(onClick = { showRiskMap = false }) {
+                                Text("Cerrar")
+                            }
+                        } else {
+                            IconButton(onClick = { showFilterSheet = true }) {
+                                Icon(
+                                    Icons.Default.FilterList,
+                                    contentDescription = "Filtrar",
+                                    tint = if (selectedTypes.size < allIncidentTypes.size)
+                                        MaterialTheme.colorScheme.primary
+                                    else Color.Gray
+                                )
+                            }
                         }
                     }
                 )
@@ -175,29 +186,38 @@ fun HomeScreen(
                         isMyLocationEnabled = locationPermissionGranted
                     )
                 ) {
-                    districtState.districts.forEach { district ->
-                        if (district.boundary.isNotEmpty()) {
-                            val avgLat = district.boundary.map { it.latitude }.average()
-                            val avgLng = district.boundary.map { it.longitude }.average()
+                    if (showRiskMap) {
+                        districtState.districts.forEach { district ->
+                            if (district.boundary.size >= 3) {
+                                val points = district.boundary.map { LatLng(it.latitude, it.longitude) }
+                                val boundaryColor = getRiskStrokeColor(district.riskLevel)
+                                Polygon(
+                                    points = points,
+                                    fillColor = getRiskFillColor(district.riskLevel),
+                                    strokeColor = boundaryColor,
+                                    strokeWidth = 2f,
+                                    clickable = false
+                                )
+                                val avgLat = district.boundary.map { it.latitude }.average()
+                                val avgLng = district.boundary.map { it.longitude }.average()
+                                MarkerInfoWindow(
+                                    state = rememberMarkerState(position = LatLng(avgLat, avgLng)),
+                                    icon = remember(district.riskLevel) { getRiskMarkerIcon(district.riskLevel) },
+                                    title = district.name,
+                                    snippet = "Riesgo: ${district.riskCategory} - Incidentes: ${district.incidentCount}"
+                                )
+                            }
+                        }
+                        locationState.locations.forEach { loc ->
                             MarkerInfoWindow(
                                 state = rememberMarkerState(
-                                    position = LatLng(avgLat, avgLng)
+                                    position = LatLng(loc.latitude, loc.longitude)
                                 ),
-                                icon = remember(district.riskLevel) { getRiskMarkerIcon(district.riskLevel) },
-                                title = district.name,
-                                snippet = "Riesgo: ${district.riskCategory} - Incidentes: ${district.incidentCount}"
+                                icon = remember { getLocationMarkerIcon() },
+                                title = loc.address ?: loc.district,
+                                snippet = loc.district
                             )
                         }
-                    }
-                    locationState.locations.forEach { loc ->
-                        MarkerInfoWindow(
-                            state = rememberMarkerState(
-                                position = LatLng(loc.latitude, loc.longitude)
-                            ),
-                            icon = remember { getLocationMarkerIcon() },
-                            title = loc.address ?: loc.district,
-                            snippet = loc.district
-                        )
                     }
                     filteredReports.forEach { report ->
                         MarkerInfoWindow(
@@ -338,6 +358,18 @@ private fun createCircleMarker(bgColor: Int, textColor: Int, letter: String): Bi
     canvas.drawText(letter, center, center + yOffset, paint)
 
     return BitmapDescriptorFactory.fromBitmap(bitmap)
+}
+
+private fun getRiskStrokeColor(riskLevel: Int): Color = when (riskLevel) {
+    4, 5 -> Color(0xFFD32F2F)
+    3 -> Color(0xFFF57C00)
+    2 -> Color(0xFFFBC02D)
+    else -> Color(0xFF388E3C)
+}
+
+private fun getRiskFillColor(riskLevel: Int): Color {
+    val baseColor = getRiskStrokeColor(riskLevel)
+    return baseColor.copy(alpha = 0.3f)
 }
 
 private fun getReportColor(type: String): Color = when (type) {

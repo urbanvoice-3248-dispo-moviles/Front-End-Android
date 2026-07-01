@@ -48,6 +48,7 @@ fun ReportIncidentScreen(
     var mediaPath by remember { mutableStateOf<String?>(null) }
     var expanded by remember { mutableStateOf(false) }
     var mediaError by remember { mutableStateOf<String?>(null) }
+    var showLocationPicker by remember { mutableStateOf(false) }
 
     val incidentTypes = listOf(
         "ROBBERY" to "Robo", "ASSAULT" to "Asalto", "HARASSMENT" to "Acoso",
@@ -175,16 +176,42 @@ fun ReportIncidentScreen(
                     minLines = 4, modifier = Modifier.fillMaxWidth()
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = if (latitude != null) "Ubicación capturada"
-                        else "Obteniendo ubicación...",
-                        color = if (latitude != null) Color(0xFF388E3C) else Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    if (latitude == null) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (latitude != null) "Ubicación capturada"
+                            else "Obteniendo ubicación...",
+                            color = if (latitude != null) Color(0xFF388E3C) else Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (latitude == null) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        }
+                    }
+                    if (latitude != null) {
+                        Text(
+                            text = "Lat: ${"%.5f".format(latitude)} - Lon: ${"%.5f".format(longitude)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = { locationPermissionState.requestPermission() },
+                            enabled = latitude == null
+                        ) {
+                            Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Ubicación actual")
+                        }
+                        OutlinedButton(
+                            onClick = { showLocationPicker = true }
+                        ) {
+                            Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Seleccionar en mapa")
+                        }
                     }
                 }
 
@@ -289,5 +316,18 @@ fun ReportIncidentScreen(
                 }
             }
         }
+    }
+
+    if (showLocationPicker) {
+        LocationPickerDialog(
+            initialLatitude = latitude,
+            initialLongitude = longitude,
+            onConfirm = { lat, lng ->
+                latitude = lat
+                longitude = lng
+                showLocationPicker = false
+            },
+            onDismiss = { showLocationPicker = false }
+        )
     }
 }

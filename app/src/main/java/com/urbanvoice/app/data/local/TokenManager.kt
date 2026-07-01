@@ -1,6 +1,7 @@
 package com.urbanvoice.app.data.local
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -21,6 +22,7 @@ class TokenManager @Inject constructor(
         private val TOKEN_KEY = stringPreferencesKey("jwt_token")
         private val USER_ID_KEY = intPreferencesKey("user_id")
         private val USER_EMAIL_KEY = stringPreferencesKey("user_email")
+        private val TERMS_ACCEPTED_KEY = booleanPreferencesKey("terms_accepted")
     }
 
     val token: Flow<String?> = context.dataStore.data.map { prefs ->
@@ -33,6 +35,16 @@ class TokenManager @Inject constructor(
 
     val userEmail: Flow<String?> = context.dataStore.data.map { prefs ->
         prefs[USER_EMAIL_KEY]
+    }
+
+    val termsAccepted: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[TERMS_ACCEPTED_KEY] ?: false
+    }
+
+    suspend fun acceptTerms() {
+        context.dataStore.edit { prefs ->
+            prefs[TERMS_ACCEPTED_KEY] = true
+        }
     }
 
     suspend fun saveSession(token: String, userId: Int, email: String) {
