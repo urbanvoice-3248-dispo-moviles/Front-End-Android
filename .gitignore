@@ -1,3 +1,5 @@
+# reglas del git
+
 *.iml
 .gradle
 /local.properties
