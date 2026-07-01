@@ -8,7 +8,7 @@ UrbanVoice Android es el frontend móvil del sistema UrbanVoice. Está desarroll
 
 La aplicación se conecta con el backend de UrbanVoice mediante servicios REST, consumiendo endpoints para perfiles, reportes, ubicaciones y alertas.
 
-## Tecnologías utilizadas
+## Tecnologías utilizadas en el desarrollo
 
 * Kotlin
 * Android SDK
@@ -174,3 +174,4 @@ Entre los avances principales se encuentran:
 ## Conclusión
 
 El frontend Android de UrbanVoice representa la aplicación móvil del sistema, permitiendo a los usuarios interactuar con las funcionalidades principales del proyecto. Su estructura en capas, el uso de Jetpack Compose, Retrofit, Hilt y ViewModels permite que la aplicación sea escalable, mantenible y preparada para futuras mejoras.
+
