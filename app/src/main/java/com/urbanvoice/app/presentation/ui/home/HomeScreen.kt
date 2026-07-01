@@ -24,6 +24,8 @@ import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 
 private const val DEFAULT_LIMA_LATITUDE = -12.0464
 private const val DEFAULT_LIMA_LONGITUDE = -77.0428
+private const val DEFAULT_MAP_ZOOM = 12f
+private const val DEFAULT_NEARBY_RADIUS_KM = 5.0
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +49,11 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         locationViewModel.getAllLocations()
-        reportViewModel.getNearbyReports(DEFAULT_LIMA_LATITUDE, DEFAULT_LIMA_LONGITUDE)
+        reportViewModel.getNearbyReports(
+            DEFAULT_LIMA_LATITUDE,
+            DEFAULT_LIMA_LONGITUDE,
+            DEFAULT_NEARBY_RADIUS_KM
+        )
     }
 
     ModalNavigationDrawer(
@@ -117,7 +123,7 @@ fun HomeScreen(
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(defaultLatLng, 12f)
+                        position = CameraPosition.fromLatLngZoom(defaultLatLng, DEFAULT_MAP_ZOOM)
                     },
                     uiSettings = MapUiSettings(
                         myLocationButtonEnabled = true,
