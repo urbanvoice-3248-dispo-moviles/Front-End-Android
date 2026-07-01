@@ -75,6 +75,11 @@ fun ProfileScreen(
             }
             state.profile != null -> {
                 val profile = state.profile!!
+                val initials = listOf(profile.name, profile.lastName)
+                    .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                    .joinToString("")
+                    .ifBlank { "?" }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -90,7 +95,7 @@ fun ProfileScreen(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = "${profile.name.first()}${profile.lastName.first()}",
+                                text = initials,
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.headlineLarge

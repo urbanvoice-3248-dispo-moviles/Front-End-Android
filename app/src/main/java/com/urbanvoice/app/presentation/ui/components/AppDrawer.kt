@@ -25,6 +25,13 @@ fun AppDrawer(
     onMiPerfil: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
+    val initials = profile?.let {
+        listOf(it.name, it.lastName)
+            .mapNotNull { namePart -> namePart.firstOrNull()?.uppercaseChar() }
+            .joinToString("")
+            .ifBlank { "?" }
+    } ?: "?"
+
     ModalDrawerSheet {
         Box(
             modifier = Modifier
@@ -42,9 +49,7 @@ fun AppDrawer(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = if (profile != null) {
-                                "${profile.name.first()}${profile.lastName.first()}"
-                            } else "?",
+                            text = initials,
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp
