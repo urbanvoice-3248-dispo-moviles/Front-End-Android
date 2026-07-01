@@ -22,6 +22,9 @@ import com.urbanvoice.app.presentation.viewmodel.AuthViewModel
 import com.urbanvoice.app.presentation.viewmodel.LocationViewModel
 import com.urbanvoice.app.presentation.viewmodel.ReportViewModel
 
+private const val DEFAULT_LIMA_LATITUDE = -12.0464
+private const val DEFAULT_LIMA_LONGITUDE = -77.0428
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -40,11 +43,11 @@ fun HomeScreen(
     val authState by authViewModel.state.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    val defaultLatLng = LatLng(-12.0464, -77.0428)
+    val defaultLatLng = LatLng(DEFAULT_LIMA_LATITUDE, DEFAULT_LIMA_LONGITUDE)
 
     LaunchedEffect(Unit) {
         locationViewModel.getAllLocations()
-        reportViewModel.getNearbyReports(-12.0464, -77.0428)
+        reportViewModel.getNearbyReports(DEFAULT_LIMA_LATITUDE, DEFAULT_LIMA_LONGITUDE)
     }
 
     ModalNavigationDrawer(
